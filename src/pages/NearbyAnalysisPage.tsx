@@ -7,7 +7,6 @@ import { getPlacesWithinRadius } from '../services/nearbyPlaces'
 import type { Restaurant } from '../types/database'
 import type { AnalysisCenter, AnalysisMode } from '../types/location'
 
-const AGE_OPTIONS = [5, 10, 20]
 const SURVIVAL_YEARS = [0, 2, 5, 10, 15, 20]
 const COLORS = ['#1d6847', '#c27836', '#536c8a', '#92544c', '#7a6b43', '#6d5280']
 const categoryOf = (item: Restaurant) => item.category?.trim() || '미분류'
@@ -25,7 +24,6 @@ export function NearbyAnalysisPage() {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [selectedCategory, setSelectedCategory] = useState('전체')
-  const [minimumAge, setMinimumAge] = useState(10)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
@@ -56,10 +54,10 @@ export function NearbyAnalysisPage() {
   }, [restaurants])
 
   const oldRestaurants = useMemo(() => restaurants
-    .filter((item) => item.is_active && (item.operating_years ?? 0) >= minimumAge)
+    .filter((item) => item.is_active)
     .filter((item) => selectedCategory === '전체' || categoryOf(item) === selectedCategory)
     .sort((a, b) => (b.operating_years ?? 0) - (a.operating_years ?? 0)),
-  [restaurants, minimumAge, selectedCategory])
+  [restaurants, selectedCategory])
 
   const survivalSeries = useMemo(() => categories.slice(0, 6).map((category, index) => ({
     ...category,
@@ -90,12 +88,12 @@ export function NearbyAnalysisPage() {
         <div className="results-title"><AnalysisCenterSummary center={analysisCenter} /><span>반경 500m · {restaurants.length}개 영업 이력</span></div>
         {loading ? <div className="loading-state">주변 가게의 영업 이력을 찾고 있습니다.</div> : error ? <div className="error-state" role="alert">{error}</div> : <>
           <section className="old-map-section">
-            <div className="step-heading"><span>STEP 01 · LONG-LIVED PLACES</span><h2>업종별 오래된 가게를 지도에서 보세요</h2><p>현재 영업 중이며 선택한 기간 이상 운영된 가게만 표시합니다.</p></div>
+            <div className="step-heading"><span>STEP 01 · LONG-LIVED PLACES</span><h2>업종별 오래된 가게를 지도에서 보세요</h2><p>현재 영업 중인 가게를 운영 기간이 오래된 순서대로 표시합니다.</p></div>
             <div className="category-chips" aria-label="업종 필터">
               <button className={selectedCategory === '전체' ? 'active' : ''} onClick={() => setSelectedCategory('전체')}>전체 <b>{restaurants.filter((r) => r.is_active).length}</b></button>
               {categories.map((category) => <button key={category.name} className={selectedCategory === category.name ? 'active' : ''} onClick={() => setSelectedCategory(category.name)}>{category.name} <b>{category.active.length}</b></button>)}
             </div>
-            <div className="age-filter"><strong>최소 운영 기간</strong>{AGE_OPTIONS.map((age) => <button key={age} className={minimumAge === age ? 'active' : ''} onClick={() => setMinimumAge(age)}>{age}년+</button>)}<span>{oldRestaurants.length}곳 표시 중</span></div>
+            <div className="age-filter"><strong>오래된 순</strong><span>{oldRestaurants.length}곳 표시 중</span></div>
             <div className="old-map-layout">
               <div className="old-map"><RadiusMap center={analysisCenter} previewCenter={null} restaurants={oldRestaurants} allowMapSelection={false} onMapSelect={() => undefined} onPlaceSelect={setSelected} /></div>
               <div className="old-list">{oldRestaurants.length ? oldRestaurants.map((item, index) => <button key={item.restaurant_id} onClick={() => setSelected(item)}><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{item.business_name ?? '상호명 없음'}</strong><small>{categoryOf(item)} · {item.road_address ?? '주소 정보 없음'}</small></div><em>{item.operating_years?.toFixed(1)}년</em></button>) : <p>조건에 맞는 영업 중 가게가 없습니다.</p>}</div>
