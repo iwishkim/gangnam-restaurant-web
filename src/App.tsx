@@ -1,8 +1,8 @@
 import './App.css'
-import { TimeMapPage } from './pages/TimeMapPage'
+import { NearbyAnalysisPage } from './pages/NearbyAnalysisPage'
 
 function App() {
-  return <TimeMapPage />
+  return <NearbyAnalysisPage />
 }
 
 export default App

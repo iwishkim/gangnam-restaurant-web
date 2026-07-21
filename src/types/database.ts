@@ -4,10 +4,24 @@ export type RestaurantStatus =
   | 'suspended'
   | 'unknown'
 
+export interface RestaurantRow {
+  restaurant_id: string
+  place_id: string | null
+  source_row_id: number
+  source_business_id: string | null
+  business_name: string | null
+  category: string | null
+  license_date: string | null
+  closure_date: string | null
+  status_raw: string | null
+  road_address_raw: string | null
+}
+
 export interface Restaurant {
   restaurant_id: string
   place_id: string | null
   source_row_id: number
+  source_business_id: string | null
   business_name: string | null
   category: string | null
   status: RestaurantStatus | null
