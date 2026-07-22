@@ -45,5 +45,5 @@ export function KakaoMap({ restaurants, selected, onSelect }: Props) {
     map.current.setCenter(new window.kakao.maps.LatLng(selected.latitude!, selected.longitude!)); map.current.setLevel(3)
   }, [selected])
   if (error) return <div className="map-error" role="alert"><strong>지도를 표시할 수 없습니다.</strong><span>{error}</span></div>
-  return <div ref={container} className="map" aria-label="강남구 음식점 지도" />
+  return <div ref={container} className="map mobile-static-map" aria-label="강남구 음식점 지도" />
 }

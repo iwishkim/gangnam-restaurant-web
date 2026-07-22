@@ -67,5 +67,5 @@ export function RadiusMap({ center, previewCenter, restaurants, selectedRestaura
   }, [selectedRestaurant])
 
   if (error) return <div className="radius-map map-error" role="alert">{error}</div>
-  return <div ref={element} className="radius-map" aria-label="분석 반경 지도" />
+  return <div ref={element} className={`radius-map${allowMapSelection ? '' : ' mobile-static-map'}`} aria-label="분석 반경 지도" />
 }
