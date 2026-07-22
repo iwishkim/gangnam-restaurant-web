@@ -10,6 +10,7 @@ import type { AnalysisCenter, AnalysisMode } from '../types/location'
 const SURVIVAL_YEARS = [0, 2, 5, 10, 15, 20]
 const COLORS = ['#1d6847', '#c27836', '#536c8a', '#92544c', '#7a6b43', '#6d5280']
 const categoryOf = (item: Restaurant) => item.category?.trim() || '미분류'
+const yearOf = (date: string | null) => date ? Number(date.slice(0, 4)) : null
 
 interface CategorySummary {
   name: string
@@ -71,6 +72,19 @@ export function NearbyAnalysisPage() {
     ? survivalSeries
     : survivalSeries.filter((series) => series.name === selectedCategory)
 
+  const recentFlows = useMemo(() => {
+    const currentYear = new Date().getFullYear()
+    const filtered = selectedCategory === '전체'
+      ? restaurants
+      : restaurants.filter((item) => categoryOf(item) === selectedCategory)
+    return Array.from({ length: 5 }, (_, index) => currentYear - 4 + index).map((year) => ({
+      year,
+      opened: filtered.filter((item) => yearOf(item.license_date) === year).length,
+      closed: filtered.filter((item) => yearOf(item.closure_date) === year).length,
+    }))
+  }, [restaurants, selectedCategory])
+  const flowMaximum = Math.max(1, ...recentFlows.flatMap((item) => [item.opened, item.closed]))
+
   return <div className="analysis-app">
     <header className="analysis-header">
       <div className="header-copy"><span className="eyebrow">LOCAL LONGEVITY MAP · 500M</span><h1>동네 오래가게 지도</h1><p>내 주변 또는 검색한 위치에서 오래 살아남은 가게를 업종별로 찾고 생존 흐름을 비교합니다.</p></div>
@@ -110,6 +124,22 @@ export function NearbyAnalysisPage() {
               <div className="x-axis">{SURVIVAL_YEARS.map((year) => <span key={year}>{year}년</span>)}</div>
               <p className="chart-note">※ 행정 인허가 이력 기반 단순 잔존율이며, 미래 생존 가능성을 예측하는 지표는 아닙니다.</p>
             </div> : <p className="no-category-data">선택한 업종의 생존 그래프 데이터가 부족합니다.</p>}
+          </section>
+          <section className="turnover-section">
+            <div className="step-heading"><span>STEP 03 · OPEN & CLOSE</span><h2>최근 5년 창업·폐업 비교</h2><p>{selectedCategory === '전체' ? '전체 업종' : selectedCategory}의 행정 인허가일과 폐업일을 기준으로 연도별 흐름을 비교합니다.</p></div>
+            <div className="turnover-card" role="img" aria-label={`최근 5년 ${selectedCategory} 창업 및 폐업 건수 막대그래프`}>
+              <div className="turnover-legend"><span><i className="opened" />창업</span><span><i className="closed" />폐업</span></div>
+              <div className="turnover-chart">
+                {recentFlows.map((item) => <div className="turnover-row" key={item.year}>
+                  <strong>{item.year}</strong>
+                  <div className="turnover-bars">
+                    <div><span>창업</span><i className="opened" style={{ width: `${item.opened / flowMaximum * 100}%` }} /><b>{item.opened}곳</b></div>
+                    <div><span>폐업</span><i className="closed" style={{ width: `${item.closed / flowMaximum * 100}%` }} /><b>{item.closed}곳</b></div>
+                  </div>
+                </div>)}
+              </div>
+              <p className="chart-note">※ 허가일을 창업, 폐업일을 폐업으로 집계한 행정 인허가 이력 기준입니다.</p>
+            </div>
           </section>
         </>}
       </section> : <section className="empty-analysis"><strong>먼저 기준 위치를 선택해 주세요.</strong><p>현재 위치를 확인하거나 장소를 검색하면 오래된 가게 지도부터 보여드립니다.</p></section>}
