@@ -80,7 +80,7 @@ export function NearbyAnalysisPage() {
       <section className="journey"><span className="active">01 위치 선택</span><i /><span>02 오래가게 지도</span><i /><span>03 업종 생존 그래프</span></section>
       <div className="location-grid">
         <AnalysisLocationSelector mode={mode} onModeChange={changeMode} onCurrentConfirm={runAnalysis} onPreview={preview} />
-        <section className="map-card setup-map"><RadiusMap center={analysisCenter} previewCenter={previewCenter} restaurants={[]} allowMapSelection={mode === 'designated'} onMapSelect={preview} onPlaceSelect={setSelected} />
+        <section className="map-card setup-map"><RadiusMap center={analysisCenter} previewCenter={previewCenter} restaurants={[]} selectedRestaurant={null} allowMapSelection={mode === 'designated'} onMapSelect={preview} onPlaceSelect={setSelected} />
           {previewCenter && <div className="preview-action"><AnalysisCenterSummary center={previewCenter} /><button className="primary-button" onClick={() => runAnalysis(previewCenter)}>이 위치에서 찾기</button></div>}
         </section>
       </div>
@@ -95,7 +95,7 @@ export function NearbyAnalysisPage() {
             </div>
             <div className="age-filter"><strong>오래된 순</strong><span>{oldRestaurants.length}곳 표시 중</span></div>
             <div className="old-map-layout">
-              <div className="old-map"><RadiusMap center={analysisCenter} previewCenter={null} restaurants={oldRestaurants} allowMapSelection={false} onMapSelect={() => undefined} onPlaceSelect={setSelected} /></div>
+              <div className="old-map"><RadiusMap center={analysisCenter} previewCenter={null} restaurants={oldRestaurants} selectedRestaurant={selected} allowMapSelection={false} onMapSelect={() => undefined} onPlaceSelect={setSelected} /></div>
               <div className="old-list">{oldRestaurants.length ? oldRestaurants.map((item, index) => <button key={item.restaurant_id} onClick={() => setSelected(item)}><span>{String(index + 1).padStart(2, '0')}</span><div><strong>{item.business_name ?? '상호명 없음'}</strong><small>{categoryOf(item)} · {item.road_address ?? '주소 정보 없음'}</small></div><em>{item.operating_years?.toFixed(1)}년</em></button>) : <p>조건에 맞는 영업 중 가게가 없습니다.</p>}</div>
             </div>
           </section>
@@ -114,6 +114,6 @@ export function NearbyAnalysisPage() {
         </>}
       </section> : <section className="empty-analysis"><strong>먼저 기준 위치를 선택해 주세요.</strong><p>현재 위치를 확인하거나 장소를 검색하면 오래된 가게 지도부터 보여드립니다.</p></section>}
     </main>
-    {selected?.place_id && <PlaceHistoryPanel restaurant={selected} onClose={() => setSelected(null)} />}
+    {selected && <PlaceHistoryPanel restaurant={selected} onClose={() => setSelected(null)} />}
   </div>
 }

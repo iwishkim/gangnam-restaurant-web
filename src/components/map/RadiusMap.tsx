@@ -3,9 +3,9 @@ import { loadKakaoSdk, type KakaoMapInstance, type KakaoOverlay } from '../../se
 import type { Restaurant } from '../../types/database'
 import type { AnalysisCenter } from '../../types/location'
 
-interface Props { center: AnalysisCenter | null; previewCenter: AnalysisCenter | null; restaurants: Restaurant[]; allowMapSelection: boolean; onMapSelect: (center: AnalysisCenter) => void; onPlaceSelect: (restaurant: Restaurant) => void }
+interface Props { center: AnalysisCenter | null; previewCenter: AnalysisCenter | null; restaurants: Restaurant[]; selectedRestaurant?: Restaurant | null; allowMapSelection: boolean; onMapSelect: (center: AnalysisCenter) => void; onPlaceSelect: (restaurant: Restaurant) => void }
 
-export function RadiusMap({ center, previewCenter, restaurants, allowMapSelection, onMapSelect, onPlaceSelect }: Props) {
+export function RadiusMap({ center, previewCenter, restaurants, selectedRestaurant, allowMapSelection, onMapSelect, onPlaceSelect }: Props) {
   const element = useRef<HTMLDivElement>(null)
   const map = useRef<KakaoMapInstance | null>(null)
   const centerMarker = useRef<KakaoOverlay | null>(null)
@@ -56,6 +56,15 @@ export function RadiusMap({ center, previewCenter, restaurants, allowMapSelectio
       })
     })
   }, [restaurants, onPlaceSelect])
+
+  useEffect(() => {
+    if (!map.current || selectedRestaurant?.latitude == null || selectedRestaurant.longitude == null) return
+    void loadKakaoSdk().then((maps) => {
+      if (!map.current) return
+      map.current.setCenter(new maps.LatLng(selectedRestaurant.latitude!, selectedRestaurant.longitude!))
+      map.current.setLevel(3)
+    })
+  }, [selectedRestaurant])
 
   if (error) return <div className="radius-map map-error" role="alert">{error}</div>
   return <div ref={element} className="radius-map" aria-label="분석 반경 지도" />
